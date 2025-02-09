@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Reservation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a; /* Dark background */
+            color: #ffffff; /* White text */
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            height: 100vh; /* Full viewport height */
+            flex-direction: column; /* Stack items vertically */
+        }
+        .container {
+            max-width: 400px;
+            background: #2a2a2a; /* Darker container */
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px; /* Space between form and seating chart */
+        }
+        h2 {
+            text-align: center;
+            color: #ff6600; /* Orange color for the title */
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ff6600; /* Orange border */
+            border-radius: 4px;
+            background-color: #333; /* Dark input background */
+            color: #ffffff; /* White text */
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #ff6600; /* Orange button */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #e65c00; /* Darker orange on hover */
+        }
+        .seating-chart {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .seat {
+            padding: 15px;
+            background-color: #444;
+            border: 1px solid #ff6600;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .seat:hover {
+            background-color: #ff6600; /* Highlight on hover */
+        }
+        .reserved {
+            background-color: #c00; /* Red for reserved seats */
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Movie Reservation</h2>
+    <form id="reservationForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="movie">Select Movie:</label>
+        <select id="movie" name="movie" required>
+            <option value="">--Select a Movie--</option>
+            <option value="movie1">Movie 1</option>
+            <option value="movie2">Movie 2</option>
+            <option value="movie3">Movie 3</option>
+        </select>
+
+        <label for="seats">Selected Seats:</label>
+        <input type="text" id="seats" name="seats" placeholder="e.g., A1, A2" readonly>
+
+        <label for="time">Select Time:</label>
+        <select id="time" name="time" required>
+            <option value="">--Select a Time--</option>
+            <option value="10:00 AM">10:00 AM</option>
+            <option value="1:00 PM">1:00 PM</option>
+            <option value="4:00 PM">4:00 PM</option>
+            <option value="7:00 PM">7:00 PM</option>
+        </select>
+
+        <button type="submit">Reserve</button>
+    </form>
+</div>
+
+<div class="seating-chart">
+    <!-- Generate a 5x5 seating chart -->
+    <div class="seat" data-seat="1-1">1-1</div>
+    <div class="seat" data-seat="1-2">1-2</div>
+    <div class="seat" data-seat="1-3">1-3</div>
+    <div class="seat" data-seat="1-4">1-4</div>
+    <div class="seat" data-seat="1-5">1-5</div>
+    <div class="seat" data-seat="2-1">2-1</div>
+    <div class="seat" data-seat="2-2">2-2</div>
+    <div class="seat" data-seat="2-3">2-3</div>
+    <div class="seat" data-seat="2-4">2-4</div>
+    <div class="seat" data-seat="2-5">2-5</div>
+    <div class="seat" data-seat="3-1">3-1</div>
+    <div class="seat" data-seat="3-2">3-2</div>
+    <div class="seat" data-seat="3-3">3-3</div>
+    <div class="seat" data-seat="3-4">3-4</div>
+    <div class="seat" data-seat="3-5">3-5</div>
+    <div class="seat" data-seat="4-1">4-1</div>
+    <div class="seat" data-seat="4-2">4-2</div>
+    <div class="seat" data-seat="4-3">4-3</div>
+    <div class="seat" data-seat="4-4">4-4</div>
+    <div class="seat" data-seat="4-5">4-5</div>
+    <div class="seat" data-seat="5-1">5-1</div>
+    <div class="seat" data-seat="5-2">5-2</div>
+    <div class="seat" data-seat="5-3">5-3</div>
+    <div class="seat" data-seat="5-4">5-4</div>
+    <div class="seat" data-seat="5-5">5-5</div>
+</div>
+
+<script>
+    const seats = document.querySelectorAll('.seat');
+    const selectedSeats = [];
+
+    seats.forEach(seat => {
+        seat.addEventListener('click', function() {
+            const seatNumber = this.getAttribute('data-seat');
+
+            // Check if the seat is already selected
+            if (selectedSeats.includes(seatNumber)) {
+                // Deselect the seat
+                this.classList.remove('reserved');
+                const index = selectedSeats.indexOf(seatNumber);
+                if (index > -1) {
+                    selectedSeats.splice(index, 1);
+                }
+            } else {
+                // Select the seat
+                this.classList.add('reserved');
+                selectedSeats.push(seatNumber);
+            }
+
+            // Update the input field with selected seats
+            document.getElementById('seats').value = selectedSeats.join(', ');
+        });
+    });
+
+    document.getElementById('reservationForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        const username = document.getElementById('username').value;
+        const movie = document.getElementById('movie').value;
+        const seatsSelected = document.getElementById('seats').value;
+        const time = document.getElementById('time').value;
+
+        // Here you can handle the form data, e.g., send it to a server
+        console.log(`Username: ${username}, Movie: ${movie}, Seats: ${seatsSelected}, Time: ${time}`);
+
+        // Optionally, show a confirmation message
+        alert(`Reservation made for ${username}:\nMovie: ${movie}\nSeats: ${seatsSelected}\nTime: ${time}`);
+    });
+</script>
+
+</body>
+</html>

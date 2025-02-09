@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<body>
+   <h2>Add Movie</h2>
+   <form id="addMovieForm">
+      <label for="title">Title:</label>
+      <input type="text" id="title" name="title" required>
+      <label for="showtime">Showtime:</label>
+      <input type="text" id="showtime" name="showtime" required>
+      <button type="submit">Add Movie</button>
+   </form>
+   <p id="addMovieMessage"></p>
+
+   <script>
+      document.getElementById("addMovieForm").addEventListener("submit", async function(event) {
+         event.preventDefault();
+
+         const title = document.getElementById("title").value;
+         const showtime = document.getElementById("showtime").value;
+
+         const response = await fetch("http://localhost:8080/add_movie", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, showtime })
+         });
+
+         if (response.ok) {
+            document.getElementById("addMovieMessage").innerText = "Movie added successfully.";
+         } else {
+            document.getElementById("addMovieMessage").innerText = "Failed to add movie.";
+         }
+      });
+   </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seat Selection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            background-color: #333;
+        }
+        .container {
+            display: flex;
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+        .basket {
+            flex: 1;
+            padding: 20px;
+            background: #535353;
+            border-right: 1px solid #535353;
+        }
+        .seat-map {
+            flex: 2;
+            padding: 20px;
+            background: #535353;
+        }
+        
+        .basket h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .basket-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #ffffff;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .ticket-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .checkout {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .checkout button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #ff8800;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .stage {
+            width: 80%;
+            margin: 0 auto 20px;
+            padding: 20px;
+            background-color: #c5c6ff;
+            text-align: center;
+            border-radius: 10px;
+        }
+        .seats {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            justify-items: center;
+        }
+        .seat {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #ff8800;
+            color: #fff;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .seat.selected {
+            background-color: #ff0000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Basket Section -->
+    <div class="basket">
+        <h2>Despicable Me</h2>
+        <p>Nov 06, 2024, 3:45 PM GMT+8<br>Cinema 1, Anak ng Pota Street</p>
+        <div id="basket-items"></div> <!-- Updated to dynamic list -->
+        
+        <div class="checkout">
+            <p id="total-price"><strong>Total:</strong> $0.00</p>
+            <a href="RecieptDespicable.html" class="checkout.button">Checkout</a>
+        </div>
+    </div>
+
+    <!-- Seat Map Section -->
+    <div class="seat-map">
+        <div class="stage">Stage</div>
+        <div class="seats">
+            <!-- Generate seats as divs with numbers -->
+            <script>
+                for (let row = 1; row <= 5; row++) {
+                    for (let seat = 1; seat <= 6; seat++) {
+                        document.write(`<div class="seat" onclick="toggleSeat(${row}, ${seat}, this)" data-row="${row}" data-seat="${seat}">${seat}</div>`);
+                    }
+                }
+            </script>
+        </div>
+    </div>
+</div>
+
+<script>
+    const basketItems = document.getElementById("basket-items");
+    const totalPriceElem = document.getElementById("total-price");
+    const seatPrice = 20.00;
+    const serviceFee = 0.50;
+    let selectedSeats = [];
+
+    // Function to toggle seat selection
+    function toggleSeat(row, seat, element) {
+        const seatIndex = selectedSeats.findIndex(s => s.row === row && s.seat === seat);
+
+        if (seatIndex >= 0) {
+            // Seat is already selected, so remove it
+            selectedSeats.splice(seatIndex, 1);
+            element.classList.remove("selected");
+            removeSeatFromBasket(row, seat);
+        } else {
+            // Seat is not selected, so add it
+            selectedSeats.push({ row, seat });
+            element.classList.add("selected");
+            addSeatToBasket(row, seat);
+        }
+        updateTotal();
+    }
+
+    // Function to add seat to the basket
+    function addSeatToBasket(row, seat) {
+        const basketItem = document.createElement("div");
+        basketItem.classList.add("basket-item");
+        basketItem.setAttribute("data-row", row);
+        basketItem.setAttribute("data-seat", seat);
+        
+        basketItem.innerHTML = `
+            <div class="ticket-info">
+                <p><strong>Row:</strong> ${row}, <strong>Seat:</strong> ${seat}</p>
+                <p>General Admission - $${seatPrice.toFixed(2)} + $${serviceFee.toFixed(2)} service fee</p>
+            </div>
+            <button onclick="removeSeat(${row}, ${seat}, this)">🗑️</button>
+        `;
+        
+        basketItems.appendChild(basketItem);
+    }
+
+    // Function to remove seat from the basket
+    function removeSeat(row, seat, button) {
+        // Remove from selectedSeats array
+        selectedSeats = selectedSeats.filter(s => !(s.row === row && s.seat === seat));
+
+        // Remove the basket item element
+        const basketItem = button.parentElement;
+        basketItem.remove();
+
+        // Update the seat color on the map
+        const seatElement = document.querySelector(`.seat[data-row="${row}"][data-seat="${seat}"]`);
+        seatElement.classList.remove("selected");
+
+        updateTotal();
+    }
+
+    // Function to update the total price
+    function updateTotal() {
+        const itemCount = selectedSeats.length;
+        const totalServiceFee = serviceFee * itemCount;
+        const totalPrice = seatPrice * itemCount + totalServiceFee;
+        totalPriceElem.innerText = `Total: $${totalPrice.toFixed(2)}`;
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seat Selection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            background-color: #333;
+        }
+        .container {
+            display: flex;
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+        .basket {
+            flex: 1;
+            padding: 20px;
+            background: #535353;
+            border-right: 1px solid #535353;
+        }
+        .seat-map {
+            flex: 2;
+            padding: 20px;
+            background: #535353;
+        }
+
+        .basket h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .basket-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #ffffff;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .ticket-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .checkout {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .checkout button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #ff8800;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .stage {
+            width: 80%;
+            margin: 0 auto 20px;
+            padding: 20px;
+            background-color: #c5c6ff;
+            text-align: center;
+            border-radius: 10px;
+        }
+        .seats {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            justify-items: center;
+        }
+        .seat {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #ff8800;
+            color: #fff;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .seat.selected {
+            background-color: #ff0000;
+        }
+        .seat.reserved {
+            background-color: #808080;
+            cursor: not-allowed;
+        }
+        .seat.available {
+            background-color: #00ff00;
+        }
+        #reserveMessage {
+            color: #ffffff;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Basket Section -->
+    <div class="basket">
+        <h2>Despicable Me</h2>
+        <p>Nov 06, 2024, 3:45 PM GMT+8<br>Cinema 1, Anak ng Pota Street</p>
+        <div id="basket-items"></div> <!-- Updated to dynamic list -->
+        
+        <div class="checkout">
+            <p id="total-price"><strong>Total:</strong> $0.00</p>
+            <a href="RecieptDespicable.html" class="checkout.button">Checkout</a>
+        </div>
+    </div>
+
+    <!-- Seat Map Section -->
+    <div class="seat-map">
+        <div class="stage">Stage</div>
+        <div class="seats" id="seatGrid">
+            <!-- Seats will be dynamically generated here -->
+        </div>
+        <button onclick="reserveSelectedSeat()">Reserve Selected Seat</button>
+        <p id="reserveMessage"></p>
+    </div>
+</div>
+
+<script>
+   let selectedSeat = null;
+   const seatPrice = 20.00;
+   const serviceFee = 0.50;
+
+   // Load seats dynamically
+   async function loadSeats(movieId) {
+       try {
+           const response = await fetch(`http://localhost:8080/view_seats/${movieId}`);
+           const data = await response.json();
+
+           const seatGrid = document.getElementById("seatGrid");
+           seatGrid.innerHTML = "";  // Clear the seat grid for re-rendering
+
+           for (let row = 0; row < 5; row++) {
+               for (let col = 0; col < 6; col++) {
+                   const seat = document.createElement("button");
+                   seat.classList.add("seat");
+                   seat.textContent = `${row + 1}-${col + 1}`;
+                   seat.dataset.row = row;
+                   seat.dataset.col = col;
+
+                   // Set seat class based on availability
+                   if (data.seats[row][col] === "available") {
+                       seat.classList.add("available");
+                       seat.onclick = () => selectSeat(seat);
+                   } else if (data.seats[row][col] === "reserved") {
+                       seat.classList.add("reserved");
+                       seat.disabled = true; // Reserved seats are disabled
+                   }
+                   seatGrid.appendChild(seat);
+               }
+           }
+       } catch (error) {
+           console.error("Error loading seats:", error);
+       }
+   }
+
+   // Select a seat
+   function selectSeat(seat) {
+       // Deselect the previously selected seat, if any
+       if (selectedSeat) {
+           selectedSeat.classList.remove("selected");
+           selectedSeat.classList.add("available");
+       }
+
+       // Select the new seat
+       seat.classList.remove("available");
+       seat.classList.add("selected");
+       selectedSeat = seat;
+       document.getElementById("reserveMessage").innerText = `Selected Seat: ${seat.dataset.row}-${seat.dataset.col}`;
+   }
+
+   // Reserve selected seat
+   async function reserveSelectedSeat() {
+       if (!selectedSeat) {
+           alert("Please select a seat first.");
+           return;
+       }
+
+       const seatRow = selectedSeat.dataset.row;
+       const seatCol = selectedSeat.dataset.col;
+
+       try {
+           const response = await fetch("http://localhost:8080/reserve_seat", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({
+                   movie_id: 1,  // Hardcoded movie ID; replace as needed
+                   seat_row: parseInt(seatRow),
+                   seat_col: parseInt(seatCol),
+                   user_id: 1   // Hardcoded user ID; replace with actual logged-in user ID
+               })
+           });
+
+           if (response.ok) {
+               document.getElementById("reserveMessage").innerText = "Reservation successful!";
+               selectedSeat.classList.remove("selected");
+               selectedSeat.classList.add("reserved");
+               selectedSeat.disabled = true;  // Disable the reserved seat
+               selectedSeat = null;  // Clear selection after reservation
+           } else {
+               document.getElementById("reserveMessage").innerText = "Failed to reserve seat.";
+           }
+       } catch (error) {
+           console.error("Error reserving seat:", error);
+       }
+   }
+
+   // Load seats when the page loads
+   document.addEventListener("DOMContentLoaded", () => loadSeats(1)); // Hardcoded movie ID; adjust as needed
+</script>
+
+</body>
+</html>

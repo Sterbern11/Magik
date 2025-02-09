@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Reservation</title>
+</head>
+<body>
+    <h1>Welcome to the Movie Reservation System</h1>
+    <form id="reservationForm">
+        <label for="movieName">Movie Name:</label>
+        <input type="text" id="movieName" name="movieName" required><br><br>
+        <label for="showTime">Show Time:</label>
+        <input type="text" id="showTime" name="showTime" required><br><br>
+        <label for="seatNumber">Seat Number:</label>
+        <input type="text" id="seatNumber" name="seatNumber" required><br><br>
+        <label for="userName">User  Name:</label>
+        <input type="text" id="userName" name="userName" required><br><br>
+        <label for="isApproved">Approved:</label>
+        <input type="checkbox" id="isApproved" name="isApproved" value="1"><br><br>
+        <button type="submit">Add Reservation</button>
+    </form>
+
+    <script>
+        document.getElementById('reservationForm').onsubmit = function(event) {
+            event.preventDefault(); // Prevent the form from submitting the default way
+
+            const formData = new FormData(this);
+            const params = new URLSearchParams(formData).toString();
+
+            fetch('/add_reservation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data); // Show success or error message
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        };
+    </script>
+</body>
+</html>
